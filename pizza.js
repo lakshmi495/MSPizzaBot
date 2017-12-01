@@ -122,6 +122,9 @@ function(session,results){
 
 bot.dialog("Order",[
   function(session){
+    var pizzakind=null;
+    var quantity=null;
+    var orderdate=null;
       builder.Prompts.text(session,"okay, what kind of pizza would you like?");
   },
   function(session,results){
@@ -129,7 +132,7 @@ bot.dialog("Order",[
             if (results.response) {
               var array=["veg","chicken","cheese","double cheese","margarita","panner","fresh pan pizza"];
               if(array.indexOf(results.response)!=-1){
-                var pizzakind=results.response;
+                 pizzakind=results.response;
               }
               else{
                 session.send("Enter valid reply");
@@ -145,7 +148,7 @@ function(session,results,next){
                session.send("Enter Valid reply");
 }
 else{
-  var quantity=results.response;
+   quantity=results.response;
 }
 }
 
@@ -157,9 +160,9 @@ function(session,results){
   if (results.response){
     session.dialogData.time = builder.EntityRecognizer.resolveTime([results.response]);
     //order.date=session.dialogData.time;
-       var date=date.format(session.dialogData.time, 'MM/DD/YYYY');
+     orderdate=date.format(session.dialogData.time, 'MM/DD/YYYY');
   }
-  session.send(`Order confirmed. Order details: <br/>Type: ${pizzakind} <br/>quantity: ${quantity} <br/> date:${date} `);
+  session.send(`Order confirmed. Order details: <br/>Type: ${pizzakind} <br/>quantity: ${quantity} <br/> date:${orderdate} `);
   session.endDialog();
 
 }
