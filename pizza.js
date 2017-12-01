@@ -19,7 +19,7 @@ server.post('/api/messages', connector.listen());
 
 var bot = new builder.UniversalBot(connector, function (session) {
     session.send("Welcome to pizza ordering bot");
-    session.beginDialog("OrderPizza");
+    session.beginDialog("Order");
 });
 
 var luisAppUrl = 'https://westus.api.cognitive.microsoft.com/luis/v2.0/apps/eafd1e94-89c3-4d89-9dff-918a3c0d79bd?subscription-key=137d934f7aea4f45a2216f250237285a&verbose=true&timezoneOffset=0&q=';
@@ -51,11 +51,11 @@ bot.dialog("OrderPizza",[
         return [ obj[key]];
       });
       console.log(result[2]);
+      order.date=result[2];
     }
-if(order.pizzakind && order.quantity && order.date ){
+/*if(order.pizzakind && order.quantity && order.date ){
   session.send(`Order confirmed. Order details: <br/>Type: ${order.pizzakind} <br/>quantity: ${order.quantity} <br/> date:${result[2]} `);
-  session.endDialog();
-}
+}*/
     if(!order.pizzakind){
       builder.Prompts.text(session,"sure, what type of pizza would you want me to order?");
     }else{
@@ -79,9 +79,7 @@ if(order.pizzakind && order.quantity && order.date ){
     builder.Prompts.text(session,"how many of them would you like to order?");
   }
   else {
-    {
       next();
-    }
   }
 },
 function(session,results,next){
@@ -110,6 +108,58 @@ function(session,results){
        order.date=date.format(session.dialogData.time, 'MM/DD/YYYY');
   }
   session.send(`Order confirmed. Order details: <br/>Type: ${order.pizzakind} <br/>quantity: ${order.quantity} <br/> date:${order.date} `);
+  session.endDialog();
+
+}
+]).triggerAction({
+    matches: 'PizzaOrdering',
+    confirmPrompt: "This will cancel the ordering. Are you sure?"
+}).cancelAction('cancelpizza', "pizza order canceled.", {
+    matches: /^(cancel|nevermind)/i,
+    confirmPrompt: "Are you sure?"
+});
+
+
+bot.dialog("Order",[
+  function(session){
+      builder.Prompts.text(session,"okay, what kind of pizza would you like?");
+  },
+  function(session,results){
+    var order = session.dialogData.order
+            if (results.response) {
+              var array=["veg","chicken","cheese","double cheese","margarita","panner","fresh pan pizza"];
+              if(array.indexOf(results.response)!=-1){
+                var pizzakind=results.response;
+              }
+              else{
+                session.send("Enter valid reply");
+              }
+  }
+
+    builder.Prompts.text(session,"how many of them would you like to order?");
+},
+function(session,results,next){
+  var order = session.dialogData.order;
+          if (results.response) {
+            if (isNaN(results.response)) {
+               session.send("Enter Valid reply");
+}
+else{
+  var quantity=results.response;
+}
+}
+
+
+  builder.Prompts.time(session,"when do you prefer your order to be delivered?");
+},
+function(session,results){
+  var order = session.dialogData.order;
+  if (results.response){
+    session.dialogData.time = builder.EntityRecognizer.resolveTime([results.response]);
+    //order.date=session.dialogData.time;
+       var date=date.format(session.dialogData.time, 'MM/DD/YYYY');
+  }
+  session.send(`Order confirmed. Order details: <br/>Type: ${pizzakind} <br/>quantity: ${quantity} <br/> date:${date} `);
   session.endDialog();
 
 }
